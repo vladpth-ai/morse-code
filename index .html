@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Морзе">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%23000000'/%3E%3Ccircle cx='150' cy='256' r='38' fill='%23ffffff'/%3E%3Crect x='230' y='218' width='170' height='76' rx='38' fill='%23ffffff'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%23000000'/%3E%3Ccircle cx='150' cy='256' r='38' fill='%23ffffff'/%3E%3Crect x='230' y='218' width='170' height='76' rx='38' fill='%23ffffff'/%3E%3C/svg%3E">
+<title>Азбука Морзе</title>
+<style>
+  :root{
+    --bg:#FFFFFF;--card:#FFFFFF;--card-border:#DDDDDD;
+    --text:#000000;--text-secondary:#666666;
+    --input-bg:#F2F2F2;--separator:#D8D8D8;
+    --accent:#000000;--accent-hover:#333333;
+    --accent-tint:#F2F2F2;--accent-tint-active:#E5E5E5;
+    --btn-border:none;--btn-pad:10px 16px;
+    --shadow-card:0 1px 2px rgba(0,0,0,0.06);
+    --radius-card:16px;--radius-control:10px;--radius-small:8px;
+  }
+  :root.dark{
+    --bg:#000000;--card:#101010;--card-border:#2C2C2C;
+    --text:#FFFFFF;--text-secondary:#999999;
+    --input-bg:#1A1A1A;--separator:#2C2C2C;
+    --accent:#FFFFFF;--accent-hover:#CCCCCC;
+    --accent-tint:rgba(255,255,255,0.08);--accent-tint-active:rgba(255,255,255,0.16);
+    --btn-border:none;--btn-pad:10px 16px;
+    --shadow-card:0 1px 2px rgba(0,0,0,0.5);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{-webkit-text-size-adjust:100%;background:var(--bg);transition:background .2s}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",system-ui,sans-serif;
+    margin:0;padding:16px 16px 48px;min-height:100vh;
+    background:var(--bg);color:var(--text);font-size:17px;line-height:1.4;
+    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+    transition:background .2s,color .2s;
+  }
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .topbar h1{margin:0;font-size:24px;font-weight:700;letter-spacing:-.4px;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .topbar-controls{display:flex;gap:8px;flex-shrink:0;align-items:center}
+  .theme-toggle,.lang-select{padding:8px 14px;font-size:14px;font-weight:500;min-height:36px;min-width:auto;background:var(--input-bg);color:var(--text);border:none;border-radius:18px;transition:background .15s;font-family:inherit;cursor:pointer}
+  .theme-toggle:hover,.lang-select:hover{background:var(--separator)}
+  .theme-toggle:active{background:var(--separator);transform:scale(.97)}
+  .block{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius-card);padding:16px;margin-bottom:16px;box-shadow:var(--shadow-card);transition:background .2s,border-color .2s,box-shadow .2s}
+  h3{font-size:15px;font-weight:600;letter-spacing:-.2px;margin:4px 0 10px;color:var(--text);display:flex;align-items:center;justify-content:space-between;gap:8px}
+  h3 > span{flex:1 1 auto}
+  textarea{width:100%;min-height:70px;font-size:17px;padding:12px 14px;font-family:inherit;background:var(--input-bg);color:var(--text);border:none;border-radius:var(--radius-control);resize:vertical;transition:box-shadow .15s}
+  textarea::placeholder{color:var(--text-secondary)}
+  textarea:focus{outline:none;box-shadow:0 0 0 2px var(--text)}
+  #output,#decoded{background:var(--input-bg);border:none;border-radius:var(--radius-control);padding:12px 14px;margin-top:10px;min-height:44px;font-family:"SF Mono",ui-monospace,Menlo,"Courier New",monospace;font-size:16px;white-space:pre-wrap;word-wrap:break-word;color:var(--text)}
+  button{background:var(--accent-tint);color:var(--accent);border:var(--btn-border);border-radius:var(--radius-control);padding:var(--btn-pad);font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;min-height:44px;min-width:44px;transition:background .15s,transform .15s,color .15s;-webkit-tap-highlight-color:transparent}
+  button:hover{background:var(--accent-tint-active)}
+  button:active{background:var(--accent-tint-active);transform:scale(.97)}
+  button.primary{background:var(--accent);color:var(--bg)}
+  button.primary:hover,button.primary:active{background:var(--accent-hover);color:var(--bg)}
+  button.danger{background:var(--card);color:var(--text);border:1.5px solid var(--text)}
+  button.danger:hover,button.danger:active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+  button.btn-small{padding:6px 12px;font-size:13px;min-height:32px;min-width:auto}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .btn-download{width:100%;margin-top:12px}
+  .speed-box{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding:10px 14px;background:var(--input-bg);border-radius:var(--radius-control)}
+  .speed-box input[type=range]{flex:1;min-width:120px;height:32px;accent-color:var(--accent);background:transparent}
+  .speed-box select{background:var(--card);color:var(--text);border:1px solid var(--card-border);border-radius:var(--radius-small);padding:6px 10px;font-size:15px;font-family:inherit;min-width:150px}
+  .speed-box select:focus{outline:none;box-shadow:0 0 0 2px var(--text)}
+  .speed-box label{font-weight:600;font-size:15px;color:var(--text)}
+  .val{font-weight:600;font-size:15px;min-width:72px;color:var(--text)}
+  .status{font-size:13px;color:var(--text-secondary);margin-top:10px;min-height:18px}
+  .hint{color:var(--text-secondary);font-size:13px;margin-top:8px}
+  .hist-item{padding:12px 4px;border-bottom:1px solid var(--separator);font-family:"SF Mono",ui-monospace,Menlo,"Courier New",monospace;font-size:14px;color:var(--text);cursor:pointer;border-radius:var(--radius-small);transition:background .15s}
+  .hist-item:last-child{border-bottom:none}
+  .hist-item:hover,.hist-item:active{background:var(--input-bg)}
+  .hist-item .orig{font-family:inherit;color:var(--text-secondary);font-size:13px;margin-top:2px}
+  .share-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px;margin-top:8px}
+  .share-btn{display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;padding:10px 8px}
+  .spell-warn{margin-top:10px;padding:12px 14px;border-radius:var(--radius-control);background:var(--card);border:1.5px solid var(--text);color:var(--text);font-size:14px;line-height:1.45}
+  .spell-warn b{color:var(--text)}
+  .spell-warn .bad-char{display:inline-block;padding:1px 8px;margin:2px;border-radius:6px;background:var(--text);color:var(--bg);font-family:"SF Mono",ui-monospace,monospace;font-weight:700}
+  .spell-ok{margin-top:10px;padding:12px 14px;border-radius:var(--radius-control);background:var(--input-bg);border:1px solid var(--separator);color:var(--text);font-size:14px}
+  .morse-keys{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:10px}
+  .morse-keys .key{font-family:"SF Mono",ui-monospace,Menlo,"Courier New",monospace;font-size:22px;font-weight:700;padding:12px 6px;min-height:48px;background:var(--card);color:var(--text);border:1.5px solid var(--text)}
+  .morse-keys .key:hover,.morse-keys .key:active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+  .morse-keys .key-del{font-size:18px}
+  .postcard-bg-preview{display:none;align-items:center;gap:8px;margin-top:8px;font-size:13px;color:var(--text-secondary)}
+  .postcard-bg-preview.show{display:flex}
+  .postcard-bg-preview img{width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--card-border)}
+  .postcard-bg-preview button{min-height:28px;min-width:28px;padding:4px 8px;font-size:14px}
+
+  @media (min-width: 720px) {
+    body { max-width: 1200px; margin: 0 auto; padding: 24px 24px 64px; }
+    .topbar h1 { font-size: 28px; }
+    textarea { min-height: 100px; }
+    .hint, .status { font-size: 14px; }
+  }
+
+  @media (min-width: 900px) {
+    body { font-size: 18px; }
+    .main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+    .block { margin-bottom: 0; }
+    .block.encode  { grid-column: 1; grid-row: 1 / span 2; }
+    .block.decode  { grid-column: 2; grid-row: 1; }
+    .block.history { grid-column: 2; grid-row: 2; }
+    .block:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    body.dark .block:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
+    h3 { font-size: 16px; }
+    button { min-height: 40px; padding: 8px 16px; }
+    button:hover { transform: translateY(-1px); }
+    .btn-download { width: auto; }
+    .share-row { grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); }
+    .morse-keys { grid-template-columns: repeat(5, minmax(0, 84px)); justify-content: start; }
+    .speed-box { flex-wrap: nowrap; }
+    .speed-box input[type=range] { min-width: 0; }
+  }
+
+  @media (max-width:400px){
+    body{padding:12px 12px 40px;font-size:16px}
+    .topbar h1{font-size:20px}
+    h3{font-size:14px}
+    button{font-size:14px;padding:9px 12px}
+    button.btn-small{padding:5px 10px}
+    .share-btn{font-size:13px;padding:9px 6px;min-width:auto}
+    .theme-toggle,.lang-select{padding:7px 12px;font-size:13px}
+    .speed-box select{min-width:120px;font-size:14px}
+    .morse-keys .key{font-size:19px;padding:10px 4px;min-height:44px}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1 id="appTitle">Азбука Морзе</h1>
+  <div class="topbar-controls">
+    <select class="lang-select" id="langSelect">
+      <option value="ru">🇷🇺 RU</option>
+      <option value="en">🇬🇧 EN</option>
+    </select>
+    <button class="theme-toggle" id="themeBtn">🌙 Тёмная</button>
+  </div>
+</div>
+
+<main class="main">
+  <div class="block encode">
+    <h3><span id="h3_encode">Текст → Морзе</span></h3>
+    <textarea id="input" placeholder="Введите текст..." inputmode="text" spellcheck="true" lang="ru"></textarea>
+    <div id="output"></div>
+    <div id="spellBox"></div>
+    <div class="speed-box">
+      <label for="wpm" id="lbl_speed">Скорость:</label>
+      <input type="range" id="wpm" min="5" max="40" value="15" step="1">
+      <span class="val" id="wpmVal">15 WPM</span>
+      <label for="signal" id="lbl_signal">Сигнал:</label>
+      <select id="signal">
+        <option value="standard" id="opt_signal_standard">Standard (700 Hz)</option>
+        <option value="bird" id="opt_signal_bird">Bird song</option>
+        <option value="kalimba" id="opt_signal_kalimba">Kalimba</option>
+        <option value="bass" id="opt_signal_bass">Bass</option>
+        <option value="click" id="opt_signal_click">Click (telegraph)</option>
+      </select>
+    </div>
+    <div class="row">
+      <button class="primary" id="btn_play">🔊 Озвучить</button>
+      <button id="btn_stop">⏹ Стоп</button>
+      <button id="btn_check">🔍 Проверить</button>
+      <button id="btn_save_text">💾 Текст</button>
+      <button class="danger" id="btn_clear">🗑 Очистить</button>
+    </div>
+    <button class="btn-download primary" id="btn_download">📥 Скачать (WAV + морзе)</button>
+
+    <h3 style="margin-top:18px"><span id="h3_share">Поделиться</span></h3>
+    <div class="share-row">
+      <button class="share-btn" id="btn_tg">📨 Telegram</button>
+      <button class="share-btn" id="btn_wa">💬 WhatsApp</button>
+      <button class="share-btn" id="btn_vk">🅥 VK</button>
+      <button class="share-btn" id="btn_x">𝕏 X</button>
+      <button class="share-btn" id="btn_copy_share">📋 Копировать</button>
+      <button class="share-btn primary" id="btn_share_file">🎵 WAV</button>
+      <button class="share-btn" id="btn_sys">🔗 Поделиться</button>
+    </div>
+    <div class="row" style="align-items:center;margin-top:10px">
+      <button class="primary" id="btn_postcard" style="flex:1">🖼 Открытка PNG</button>
+      <button id="btn_postcard_bg" class="btn-small">📷 Фон</button>
+    </div>
+    <input type="file" id="postcardBgInput" accept="image/*" hidden>
+    <div id="postcardBgPreview" class="postcard-bg-preview">
+      <img id="postcardBgImg" alt="">
+      <span id="postcardBgLabel">Фон выбран</span>
+      <button class="danger" id="btn_postcard_bg_clear" type="button">×</button>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="block decode">
+    <h3><span id="h3_decode">Морзе → Текст</span></h3>
+    <textarea id="morseInput" placeholder=".--. .-. .. .-- . -" inputmode="text" spellcheck="false" autocapitalize="off" autocorrect="off" lang="ru"></textarea>
+    <div class="morse-keys" id="morseKeys">
+      <button class="key" data-insert="." aria-label="dot">·</button>
+      <button class="key" data-insert="-" aria-label="dash">−</button>
+      <button class="key" data-insert=" " aria-label="letter-space">␣</button>
+      <button class="key" data-insert=" / " aria-label="word-separator">/</button>
+      <button class="key key-del" id="morseBackspace" aria-label="backspace">⌫</button>
+    </div>
+    <div id="decoded"></div>
+    <div class="row">
+      <button class="primary" id="btn_decode">Перевести</button>
+      <button id="btn_copy_decoded">📋 Копировать</button>
+      <button id="btn_decoded_to_input">→ в текст →</button>
+      <button class="danger" id="btn_clear_decode">🗑 Очистить</button>
+    </div>
+  </div>
+
+  <div class="block history">
+    <h3>
+      <span id="h3_history">История</span>
+      <button class="btn-small danger" id="btn_clear_history">Очистить</button>
+    </h3>
+    <div id="history"></div>
+  </div>
+</main>
+
+<script>
+'use strict';
+
+const I18N = {
+  ru:{
+    title:'Азбука Морзе',themeBtnDark:'🌙 Тёмная',themeBtnLight:'☀️ Светлая',
+    h3_encode:'Текст → Морзе',h3_decode:'Морзе → Текст',h3_share:'Поделиться',h3_history:'История',
+    lbl_speed:'Скорость:',lbl_signal:'Сигнал:',
+    placeholder_input:'Введите текст...',placeholder_morse:'.--. .-. .. .-- . -',
+    btn_play:'🔊 Озвучить',btn_stop:'⏹ Стоп',btn_check:'🔍 Проверить',btn_save_text:'💾 Текст',
+    btn_clear:'🗑 Очистить',btn_download:'📥 Скачать (WAV + морзе)',
+    btn_tg:'📨 Telegram',btn_wa:'💬 WhatsApp',btn_vk:'🅥 VK',btn_x:'𝕏 X',
+    btn_copy_share:'📋 Копировать',btn_sys:'🔗 Поделиться',btn_share_file:'🎵 WAV',
+    btn_postcard:'🖼 Открытка PNG',btn_postcard_bg:'📷 Фон',postcard_bg_label:'Фон выбран',
+    status_postcard_generating:'Создаю открытку и аудио…',status_postcard_fail:'Не удалось создать открытку',
+    btn_decode:'Перевести',btn_clear_decode:'🗑 Очистить',btn_clear_history:'Очистить',
+    btn_copy_decoded:'📋 Копировать',btn_decoded_to_input:'→ в текст →',
+    sig_standard:'Standard (700 Hz)',sig_bird:'Bird song',sig_kalimba:'Kalimba',sig_bass:'Bass',sig_click:'Щелчок (телеграф)',
+    status_nothing:'Нечего скачивать — введите текст.',status_wav_fail:'Не удалось собрать WAV.',
+    status_downloaded:'Скачано: WAV + TXT',status_saved_text:'Текст сохранён.',
+    status_nothing_save:'Нечего сохранять.',status_playing:w=>`Озвучка… (${w} WPM)`,
+    status_done:'Готово.',status_stopped:'Остановлено.',status_no_text_play:'Нет текста для озвучки.',
+    status_share_first:'Сначала введите текст.',status_tg:'Открыт Telegram.',status_wa:'Открыт WhatsApp.',
+    status_vk:'Открыт VK.',status_x:'Открыт X (Twitter).',status_copied:'Скопировано в буфер.',
+    status_copied_fb:'Скопировано (fallback).',status_shared:'Отправлено.',
+    status_share_cancel:'Отмена или ошибка.',status_share_unavail:'Системное меню недоступно — скопировано.',
+    status_check_empty:'Введите текст для проверки.',status_check_ok:'Проверка пройдена — все символы известны.',
+    status_check_bad:n=>`Найдено проблем: ${n}.`,status_fixed:'Исправлено автоматически.',
+    spell_ok:'✅ <b>Проверка пройдена.</b> Все символы есть в таблице Морзе.',
+    spell_bad:'⚠ <b>Найдены символы, которых нет в таблице Морзе:</b>',
+    spell_replace:'→ можно заменить на',spell_norepl:'(нет замены — удалите или замените вручную)',
+    spell_fix:'🔧 Исправить автоматически',history_empty:'Пока пусто.',
+    share_text:(text,morse)=>`📝 ${text}\n📡 ${morse}`,
+    share_text_file:(text,morse)=>`📝 ${text}\n📡 ${morse}\n🎵 WAV прикреплён`,
+    share_title:'Азбука Морзе',
+    doc_lang:'ru',spell_lang:'ru',
+    status_sharing_file:'Открыто системное меню — выберите мессенджер.',
+    status_share_file_unsupported:'Браузер не поддерживает шаринг файлов. Скачиваем WAV.',
+    status_file_downloaded:'WAV скачан — прикрепите вручную.',
+    status_no_text:'Нет текста для отправки.',
+    status_decoded_copied:'Декодированный текст скопирован.',
+    status_decoded_to_input:'Перенесено в поле «Текст → Морзе».',
+    status_decode_empty:'Введите морзе для перевода.',
+  },
+  en:{
+    title:'Morse Code',themeBtnDark:'🌙 Dark',themeBtnLight:'☀️ Light',
+    h3_encode:'Text → Morse',h3_decode:'Morse → Text',h3_share:'Share',h3_history:'History',
+    lbl_speed:'Speed:',lbl_signal:'Signal:',
+    placeholder_input:'Enter text...',placeholder_morse:'.--. .-. .. .-- . -',
+    btn_play:'🔊 Play',btn_stop:'⏹ Stop',btn_check:'🔍 Check',btn_save_text:'💾 Text',
+    btn_clear:'🗑 Clear',btn_download:'📥 Download (WAV + Morse)',
+    btn_tg:'📨 Telegram',btn_wa:'💬 WhatsApp',btn_vk:'🅥 VK',btn_x:'𝕏 X',
+    btn_copy_share:'📋 Copy',btn_sys:'🔗 Share',btn_share_file:'🎵 WAV',
+    btn_postcard:'🖼 Postcard PNG',btn_postcard_bg:'📷 Background',postcard_bg_label:'Background selected',
+    status_postcard_generating:'Generating postcard & audio…',status_postcard_fail:'Failed to create postcard',
+    btn_decode:'Translate',btn_clear_decode:'🗑 Clear',btn_clear_history:'Clear',
+    btn_copy_decoded:'📋 Copy',btn_decoded_to_input:'→ to text →',
+    sig_standard:'Standard (700 Hz)',sig_bird:'Bird song',sig_kalimba:'Kalimba',sig_bass:'Bass',sig_click:'Click (telegraph)',
+    status_nothing:'Nothing to download — enter text.',status_wav_fail:'Failed to build WAV.',
+    status_downloaded:'Downloaded: WAV + TXT',status_saved_text:'Text saved.',
+    status_nothing_save:'Nothing to save.',status_playing:w=>`Playing… (${w} WPM)`,
+    status_done:'Done.',status_stopped:'Stopped.',status_no_text_play:'No text to play.',
+    status_share_first:'Enter text first.',status_tg:'Telegram opened.',status_wa:'WhatsApp opened.',
+    status_vk:'VK opened.',status_x:'X (Twitter) opened.',status_copied:'Copied to clipboard.',
+    status_copied_fb:'Copied (fallback).',status_shared:'Shared.',
+    status_share_cancel:'Cancelled or error.',status_share_unavail:'System share unavailable — copied.',
+    status_check_empty:'Enter text to check.',status_check_ok:'Check passed — all symbols known.',
+    status_check_bad:n=>`Problems found: ${n}.`,status_fixed:'Fixed automatically.',
+    spell_ok:'✅ <b>Check passed.</b> All symbols are in the Morse table.',
+    spell_bad:'⚠ <b>Found characters not in the Morse table:</b>',
+    spell_replace:'→ can be replaced with',spell_norepl:'(no replacement — delete or replace manually)',
+    spell_fix:'🔧 Fix automatically',history_empty:'Empty for now.',
+    share_text:(text,morse)=>`📝 ${text}\n📡 ${morse}`,
+    share_text_file:(text,morse)=>`📝 ${text}\n📡 ${morse}\n🎵 WAV attached`,
+    share_title:'Morse Code',
+    doc_lang:'en',spell_lang:'en',
+    status_sharing_file:'System menu opened — choose a messenger.',
+    status_share_file_unsupported:'Browser does not support file sharing. Downloading WAV.',
+    status_file_downloaded:'WAV downloaded — attach it manually.',
+    status_no_text:'No text to share.',
+    status_decoded_copied:'Decoded text copied.',
+    status_decoded_to_input:'Moved to "Text → Morse" field.',
+    status_decode_empty:'Enter Morse to translate.',
+  }
+};
+
+const storage={
+  get:k=>{try{return localStorage.getItem(k)}catch{return null}},
+  set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}},
+  del:k=>{try{localStorage.removeItem(k)}catch{}}
+};
+
+let currentLang=(()=>{const s=storage.get('morse_lang');return I18N[s]?s:'ru'})();
+let t=I18N[currentLang];
+
+const MORSE={
+  'А':'.-','Б':'-...','В':'.--','Г':'--.','Д':'-..','Е':'.','Ж':'...-','З':'--..',
+  'И':'..','Й':'.---','К':'-.-','Л':'.-..','М':'--','Н':'-.','О':'---','П':'.--.',
+  'Р':'.-.','С':'...','Т':'-','У':'..-','Ф':'..-.','Х':'....','Ц':'-.-.','Ч':'---.',
+  'Ш':'----','Щ':'--.-','Ъ':'--.--','Ы':'-.--','Ь':'-..-','Э':'..-..','Ю':'..--','Я':'.-.-',
+  'A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.','F':'..-.','G':'--.','H':'....',
+  'I':'..','J':'.---','K':'-.-','L':'.-..','M':'--','N':'-.','O':'---','P':'.--.',
+  'Q':'--.-','R':'.-.','S':'...','T':'-','U':'..-','V':'...-','W':'.--','X':'-..-',
+  'Y':'-.--','Z':'--..',
+  '0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.',
+  '.':'.-.-.-',',':'--..--','?':'..--..','!':'-.-.--','/':'-..-.','-':'-....-',':':'---...',';':'-.-.-.','=':'-...-','@':'.--.-.',' ':'/'
+};
+const REPLACEMENTS={
+  'Ё':'Е','ё':'е','Ў':'У','ў':'у',
+  'Á':'A','É':'E','Í':'I','Ó':'O','Ú':'U','Ü':'U','Ñ':'N',
+  'À':'A','Â':'A','Ç':'C','È':'E','Ê':'E','Ë':'E','Î':'I','Ï':'I','Ô':'O','Ù':'U','Û':'U',
+  'Ä':'A','Ö':'O','ß':'ss','ẞ':'SS','Ã':'A','Õ':'O'
+};
+const REVERSE={};
+for(const[k,v]of Object.entries(MORSE))if(v!=='/'&&!(v in REVERSE))REVERSE[v]=k;
+
+const SCALES = {
+  standard: [700],kalimba: [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25],
+  bass:    [65.41,  73.42,  82.41,  98.00,  110.00, 130.81, 146.83, 164.81],
+  bird:    [1046.50, 1174.66, 1318.51, 1567.98, 1760.00, 2093.00, 2349.32, 2637.02],
+  click:   [0]
+};
+const CHAR_INDEX = {};
+Object.keys(MORSE).forEach((c, i) => { CHAR_INDEX[c] = i; });
+
+function freqForChar(ch, signal) {
+  const scale = SCALES[signal] || SCALES.standard;
+  const idx = CHAR_INDEX[ch.toUpperCase()];
+  if (idx === undefined) return scale[0];
+  return scale[idx % scale.length];
+}
+
+const $=id=>document.getElementById(id);
+const els={input:$('input'),output:$('output'),morseInput:$('morseInput'),decoded:$('decoded'),
+  spellBox:$('spellBox'),status:$('status'),wpmSlider:$('wpm'),wpmVal:$('wpmVal'),
+  signal:$('signal'),history:$('history')};
+
+if(storage.get('morse_theme')==='dark')document.documentElement.classList.add('dark');
+if(storage.get('morse_signal'))els.signal.value=storage.get('morse_signal');
+
+function isDark(){return document.documentElement.classList.contains('dark')}
+function syncThemeBtn(){$('themeBtn').textContent=isDark()?t.themeBtnLight:t.themeBtnDark}
+
+$('themeBtn').onclick=()=>{
+  const dark=document.documentElement.classList.toggle('dark');
+  syncThemeBtn();
+  storage.set('morse_theme',dark?'dark':'light');
+  const meta=document.querySelector('meta[name=theme-color]');
+  if(meta)meta.setAttribute('content',dark?'#000000':'#FFFFFF');
+};
+$('langSelect').onchange=(e)=>{
+  currentLang=e.target.value;
+  storage.set('morse_lang',currentLang);
+  t=I18N[currentLang];
+  applyLang();
+};
+
+function applyLang(){
+  document.documentElement.lang=t.doc_lang;
+  document.title=t.title;
+  $('appTitle').textContent=t.title;
+  $('langSelect').value=currentLang;
+  syncThemeBtn();
+  $('h3_encode').textContent=t.h3_encode;
+  $('h3_decode').textContent=t.h3_decode;
+  $('h3_share').textContent=t.h3_share;
+  $('h3_history').textContent=t.h3_history;
+  $('lbl_speed').textContent=t.lbl_speed;
+  $('lbl_signal').textContent=t.lbl_signal;
+  $('opt_signal_standard').textContent=t.sig_standard;
+  $('opt_signal_bird').textContent=t.sig_bird;
+  $('opt_signal_kalimba').textContent=t.sig_kalimba;
+  $('opt_signal_bass').textContent=t.sig_bass;
+  $('opt_signal_click').textContent=t.sig_click;
+  els.input.placeholder=t.placeholder_input;
+  els.input.lang=t.spell_lang;
+  els.morseInput.placeholder=t.placeholder_morse;
+  els.morseInput.lang=t.spell_lang;
+  ['btn_play','btn_stop','btn_check','btn_save_text','btn_clear','btn_download',
+   'btn_tg','btn_wa','btn_vk','btn_x','btn_copy_share','btn_share_file','btn_sys',
+   'btn_postcard','btn_postcard_bg',
+   'btn_decode','btn_copy_decoded','btn_decoded_to_input','btn_clear_decode',
+   'btn_clear_history'].forEach(id=>{const el=$(id);if(el)el.textContent=t[id]});
+  $('postcardBgLabel').textContent=t.postcard_bg_label;
+  $('btn_postcard_bg').title=t.btn_postcard_bg;
+  renderHistory();
+  if(els.spellBox.innerHTML)updateSpellBox(els.input.value);
+}
+
+function toMorse(text){
+  const out=[];
+  for(const ch of text.toUpperCase()){
+    if(MORSE[ch])out.push(MORSE[ch]);
+    else if(ch.trim()!=='')out.push('?');
+  }
+  return out.join(' ');
+}
+function fromMorse(m){
+  return m.trim().split('/').map(w=>
+    w.trim().split(/\s+/).filter(Boolean).map(c=>REVERSE[c]||'?').join('')
+  ).join(' ').replace(/\s{2,}/g,' ').trim();
+}
+function findProblems(text){
+  const p=[],seen=new Set();
+  for(const ch of text.toUpperCase()){
+    if(ch.trim()===''||MORSE[ch]||seen.has(ch))continue;
+    seen.add(ch);
+    p.push({char:ch,replacement:REPLACEMENTS[ch]||null});
+  }
+  return p;
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function renderSpellBox(problems){
+  if(!problems.length){els.spellBox.innerHTML=`<div class="spell-ok">${t.spell_ok}</div>`;return}
+  let html=`<div class="spell-warn">${t.spell_bad}<br>`;
+  for(const p of problems){
+    html+=`<span class="bad-char">${escapeHtml(p.char)}</span>`;
+    html+=p.replacement?` ${t.spell_replace} <b>«${escapeHtml(p.replacement)}»</b>`:` ${t.spell_norepl}`;
+    html+='<br>';
+  }
+  html+='</div>';
+  if(problems.some(p=>p.replacement))html+=`<div class="row"><button onclick="autoFix()">${t.spell_fix}</button></div>`;
+  els.spellBox.innerHTML=html;
+}
+function updateSpellBox(text){
+  const p=findProblems(text);
+  if(p.length)renderSpellBox(p);else els.spellBox.innerHTML='';
+}
+function setStatus(m){els.status.textContent=m}
+
+let typingTimer=null;
+els.input.addEventListener('input',()=>{
+  els.output.textContent=toMorse(els.input.value);
+  clearTimeout(typingTimer);
+  if(els.input.value.trim().length>1)typingTimer=setTimeout(()=>addHistory(els.input.value.trim()),1200);
+  updateSpellBox(els.input.value);
+});
+let morseTimer=null;
+els.morseInput.addEventListener('input',()=>{
+  clearTimeout(morseTimer);
+  morseTimer=setTimeout(()=>{els.decoded.textContent=fromMorse(els.morseInput.value)},200);
+});
+els.wpmSlider.addEventListener('input',()=>{els.wpmVal.textContent=els.wpmSlider.value+' WPM'});
+
+function insertInto(el, text){
+  const start = el.selectionStart ?? el.value.length;
+  const end = el.selectionEnd ?? el.value.length;
+  el.value = el.value.slice(0, start) + text + el.value.slice(end);
+  const pos = start + text.length;
+  el.selectionStart = el.selectionEnd = pos;
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+}
+$('morseKeys').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-insert]');
+  if (!btn) return;
+  insertInto(els.morseInput, btn.dataset.insert);
+});
+$('morseBackspace').addEventListener('click', () => {
+  const el = els.morseInput;
+  const start = el.selectionStart ?? el.value.length;
+  const end = el.selectionEnd ?? el.value.length;
+  if (start !== end){
+    el.value = el.value.slice(0, start) + el.value.slice(end);
+    el.selectionStart = el.selectionEnd = start;
+  } else if (start > 0){
+    el.value = el.value.slice(0, start - 1) + el.value.slice(start);
+    el.selectionStart = el.selectionEnd = start - 1;
+  }
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+});
+
+let audioCtx=null, activeOsc=[], beepTimers=[];
+function getCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx}
+function isPlaying(){return activeOsc.length>0||beepTimers.length>0}
+
+function buildSchedule(text, wpm, signal) {
+  const u = 1200 / wpm;
+  const events = [];
+  let time = 0;
+  for (const ch of text.toUpperCase()) {
+    if (ch === ' ') { time += u * 4; continue; }
+    if (ch.trim() === '') continue;
+    const code = MORSE[ch];
+    if (!code || code === '/') continue;
+    const freq = freqForChar(ch, signal);
+    for (const el of code) {
+      if (el === '.') { events.push({ start: time, dur: u, freq }); time += u * 2; }
+      else if (el === '-') { events.push({ start: time, dur: u * 3, freq }); time += u * 4; }
+    }
+    time += u * 2;
+  }
+  return { events, total: time };
+}
+
+let audioNoiseBuffer = null;
+function getAudioNoiseBuffer(ctx) {
+  if (audioNoiseBuffer && audioNoiseBuffer.sampleRate === ctx.sampleRate) return audioNoiseBuffer;
+  const len = Math.floor(ctx.sampleRate * 0.1);
+  audioNoiseBuffer = ctx.createBuffer(1, len, ctx.sampleRate);
+  const data = audioNoiseBuffer.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+  return audioNoiseBuffer;
+}
+
+function makeClickNodes(ctx, t) {
+  const nodes = [];
+  const src = ctx.createBufferSource();
+  src.buffer = getAudioNoiseBuffer(ctx);
+  const filt = ctx.createBiquadFilter();
+  filt.type = 'bandpass';
+  filt.frequency.value = 1800;
+  filt.Q.value = 1.5;
+  const g1 = ctx.createGain();
+  g1.gain.setValueAtTime(0, t);
+  g1.gain.linearRampToValueAtTime(0.35, t + 0.002);
+  g1.gain.exponentialRampToValueAtTime(0.001, t + 0.035);
+  src.connect(filt).connect(g1).connect(ctx.destination);
+  src.start(t); src.stop(t + 0.045);
+  nodes.push(src);
+
+  const osc = ctx.createOscillator();
+  const g2 = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = 180;
+  osc.connect(g2).connect(ctx.destination);
+  g2.gain.setValueAtTime(0, t);
+  g2.gain.linearRampToValueAtTime(0.22, t + 0.003);
+  g2.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+  osc.start(t); osc.stop(t + 0.06);
+  nodes.push(osc);
+  return nodes;
+}
+
+function scheduleBeep(ctx, signal, freq, start, dur) {
+  if (signal === 'click') {
+    return [...makeClickNodes(ctx, start), ...makeClickNodes(ctx, start + dur)];
+  }
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain).connect(ctx.destination);
+  if (signal === 'bird') {
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, start);
+    osc.frequency.linearRampToValueAtTime(freq * 1.3, start + dur);
+    gain.gain.setValueAtTime(0.15, start);
+  } else if (signal === 'kalimba') {
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.25, start);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + Math.min(dur, 0.4));
+  } else if (signal === 'bass') {
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.3, start);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+  } else {
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.value = 0.15;
+  }
+  osc.start(start); osc.stop(start + dur);
+  return [osc];
+}
+
+function playOutput() {
+  stopAudio(false);
+  const text = els.input.value.trim();
+  if (!text) { setStatus(t.status_no_text_play); return; }
+  const wpm = parseInt(els.wpmSlider.value, 10);
+  const signal = els.signal.value;
+  const { events, total } = buildSchedule(text, wpm, signal);
+  if (!events.length) { setStatus(t.status_no_text_play); return; }
+  const ctx = getCtx();
+  if (ctx.state === 'suspended') ctx.resume();
+  const now = ctx.currentTime;
+  for (const ev of events) {
+    const nodes = scheduleBeep(ctx, signal, ev.freq, now + ev.start / 1000, ev.dur / 1000);
+    for (const node of nodes) {
+      node.onended = () => { activeOsc = activeOsc.filter(o => o !== node); };
+      activeOsc.push(node);
+    }
+  }
+  setStatus(t.status_playing(wpm));
+  beepTimers.push(setTimeout(() => setStatus(t.status_done), total));
+}
+
+function stopAudio(show = true) {
+  const was = activeOsc.length > 0 || beepTimers.length > 0;
+  beepTimers.forEach(clearTimeout); beepTimers = [];
+  activeOsc.forEach(o => { try { o.stop(); } catch {} });
+  activeOsc = [];
+  if (show && was) setStatus(t.status_stopped);
+}
+
+$('btn_play').onclick = playOutput;
+$('btn_stop').onclick = () => stopAudio(true);
+
+els.signal.addEventListener('change', () => {
+  storage.set('morse_signal', els.signal.value);
+  if (isPlaying()) playOutput();
+});
+els.wpmSlider.addEventListener('change', () => {
+  if (isPlaying()) playOutput();
+});
+
+function sampleAt(signal, freq, t, dur) {
+  switch (signal) {
+    case 'bird':
+      return Math.sin(2 * Math.PI * freq * (t + 0.15 * t * t / dur)) * 0.3;
+    case 'kalimba': {
+      const env = Math.exp(-8 * t);
+      return (Math.sin(2 * Math.PI * freq * t) +
+              0.3 * Math.sin(2 * Math.PI * freq * 2 * t)) * 0.25 * env;
+    }
+    case 'bass':
+      return Math.sin(2 * Math.PI * freq * t) * 0.3 * Math.exp(-3 * t);
+    default:
+      return Math.sin(2 * Math.PI * freq * t) * 0.3;
+  }
+}
+
+function writeClickSamples(buf, s0, sr, n) {
+  if (s0 >= n) return;
+  const tail = Math.floor(0.06 * sr);
+  const end = Math.min(n, s0 + tail);
+  for (let i = s0; i < end; i++) {
+    const t = (i - s0) / sr;
+    const attack = Math.min(1, t / 0.002);
+    const noiseDecay = Math.exp(-t / 0.010);
+    const thumpDecay = Math.exp(-t / 0.025);
+    let h = (i * 374761393 + 668265263) | 0;
+    h = (h ^ (h >>> 13)) | 0;
+    h = Math.imul(h, 1274126177) | 0;
+    h = (h ^ (h >>> 16)) | 0;
+    const noise = ((h & 0x7fffffff) / 0x7fffffff) * 2 - 1;
+    buf[i] += noise * attack * noiseDecay * 0.35
+            + Math.sin(2 * Math.PI * 180 * t) * attack * thumpDecay * 0.22;
+  }
+}
+
+function buildWavBlob() {
+  const text = els.input.value.trim();
+  if (!text) return null;
+  const wpm = parseInt(els.wpmSlider.value, 10);
+  const signal = els.signal.value;
+  const { events, total } = buildSchedule(text, wpm, signal);
+  if (!events.length) return null;
+
+  const sr = 44100;
+  const n = Math.ceil((total / 1000 + 0.2) * sr);
+  const buf = new Float32Array(n);
+  const fadeN = Math.floor(0.005 * sr);
+
+  if (signal === 'click') {
+    for (const ev of events) {
+      const sStart = Math.floor((ev.start / 1000) * sr);
+      const sEnd = Math.floor(((ev.start + ev.dur) / 1000) * sr);
+      writeClickSamples(buf, sStart, sr, n);
+      writeClickSamples(buf, sEnd, sr, n);
+    }
+  } else {
+    for (const ev of events) {
+      const s0 = Math.floor((ev.start / 1000) * sr);
+      const s1 = Math.min(n, Math.floor(((ev.start + ev.dur) / 1000) * sr));
+      const dur = ev.dur / 1000;
+      for (let i = s0; i < s1; i++) {
+        const tt = (i - s0) / sr;
+        const fade = Math.min(1, (i - s0) / fadeN, (s1 - i) / fadeN);
+        buf[i] = sampleAt(signal, ev.freq, tt, dur) * fade;
+      }
+    }
+  }
+
+  const ba = 2, br = sr * ba, ds = n * ba;
+  const out = new ArrayBuffer(44 + ds);
+  const v = new DataView(out);
+  const ws = (o, str) => { for (let i = 0; i < str.length; i++) v.setUint8(o + i, str.charCodeAt(i)); };
+  ws(0,'RIFF'); v.setUint32(4, 36 + ds, true); ws(8,'WAVE'); ws(12,'fmt ');
+  v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,sr,true); v.setUint32(28,br,true); v.setUint16(32,ba,true);
+  v.setUint16(34,16,true); ws(36,'data'); v.setUint32(40,ds,true);
+  let o = 44;
+  for (let i = 0; i < n; i++) {
+    const s = Math.max(-1, Math.min(1, buf[i]));
+    v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    o += 2;
+  }
+  return new Blob([out], { type:'audio/wav' });
+}
+
+function downloadBlob(name, blob) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function timestamp() {
+  const d = new Date(), p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}-${p(d.getSeconds())}`;
+}
+
+$('btn_download').onclick = () => {
+  const morse = els.output.textContent.trim();
+  const text = els.input.value.trim();
+  if (!morse) { setStatus(t.status_nothing); return; }
+  const wav = buildWavBlob();
+  if (!wav) { setStatus(t.status_wav_fail); return; }
+  const wpm = parseInt(els.wpmSlider.value, 10);
+  const base = `morse_${timestamp()}_${wpm}wpm`;
+  downloadBlob(base + '.wav', wav);
+  const txt = `Text: ${text}\nSpeed: ${wpm} WPM\nSignal: ${els.signal.value}\nDate: ${new Date().toLocaleString()}\n\nMorse:\n${morse}\n`;
+  setTimeout(() => {
+    downloadBlob(base + '.txt', new Blob([txt], { type:'text/plain;charset=utf-8' }));
+    setStatus(t.status_downloaded);
+  }, 400);
+};
+
+$('btn_save_text').onclick = () => {
+  const tx = els.input.value.trim();
+  if (!tx) { setStatus(t.status_nothing_save); return; }
+  downloadBlob(`text_${timestamp()}.txt`, new Blob([tx], { type:'text/plain;charset=utf-8' }));
+  setStatus(t.status_saved_text);
+};
+
+function getShareText(withFile = false) {
+  const text = els.input.value.trim(), morse = els.output.textContent.trim();
+  if (!text || !morse) { setStatus(t.status_share_first); return null; }
+  return withFile ? t.share_text_file(text, morse) : t.share_text(text, morse);
+}
+
+async function copyText(str, okMsg) {
+  try { await navigator.clipboard.writeText(str); setStatus(okMsg); }
+  catch {
+    const ta = document.createElement('textarea');
+    ta.value = str; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); setStatus(okMsg); }
+    catch { setStatus(t.status_share_cancel); }
+    document.body.removeChild(ta);
+  }
+}
+
+$('btn_tg').onclick = () => {
+  const s = getShareText(); if (!s) return;
+  window.open('https://t.me/share/url?url=&text=' + encodeURIComponent(s), '_blank');
+  setStatus(t.status_tg);
+};
+$('btn_wa').onclick = () => {
+  const s = getShareText(); if (!s) return;
+  window.open('https://wa.me/?text=' + encodeURIComponent(s), '_blank');
+  setStatus(t.status_wa);
+};
+$('btn_vk').onclick = () => {
+  const s = getShareText(); if (!s) return;
+  window.open('https://vk.com/share.php?title=' + encodeURIComponent(s), '_blank');
+  setStatus(t.status_vk);
+};
+$('btn_x').onclick = () => {
+  const s = getShareText(); if (!s) return;
+  window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(s), '_blank');
+  setStatus(t.status_x);
+};
+$('btn_copy_share').onclick = () => {
+  const s = getShareText(); if (!s) return;
+  copyText(s, t.status_copied);
+};
+
+$('btn_share_file').onclick = async () => {
+  const wav = buildWavBlob();
+  if (!wav) { setStatus(t.status_no_text); return; }
+  const filename = `morse_${timestamp()}.wav`;
+  const file = new File([wav], filename, { type:'audio/wav' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: t.share_title, text: getShareText(true) || '' });
+      setStatus(t.status_sharing_file);
+    } catch { setStatus(t.status_share_cancel); }
+  } else {
+    setStatus(t.status_share_file_unsupported);
+    downloadBlob(filename, wav);
+    setTimeout(() => setStatus(t.status_file_downloaded), 600);
+  }
+};
+
+$('btn_sys').onclick = async () => {
+  const s = getShareText(); if (!s) return;
+  if (!navigator.share) { $('btn_copy_share').click(); return; }
+  const shareData = { title: t.share_title, text: s };
+  const wav = buildWavBlob();
+  if (wav && navigator.canShare) {
+    try {
+      const file = new File([wav], `morse_${timestamp()}.wav`, { type: 'audio/wav' });
+      if (navigator.canShare({ files: [file] })) {
+        shareData.files = [file];
+        shareData.text = getShareText(true) || s;
+      }
+    } catch {}
+  }
+  try {
+    await navigator.share(shareData);
+    setStatus(t.status_shared);
+  } catch { setStatus(t.status_share_cancel); }
+};
+
+function ensureDecoded() {
+  const txt = els.decoded.textContent.trim();
+  if (txt) return txt;
+  const raw = els.morseInput.value.trim();
+  if (!raw) return '';
+  const d = fromMorse(raw);
+  els.decoded.textContent = d;
+  return d;
+}
+$('btn_decode').onclick = () => {
+  const raw = els.morseInput.value.trim();
+  if (!raw) { setStatus(t.status_decode_empty); return; }
+  els.decoded.textContent = fromMorse(raw);
+};
+$('btn_copy_decoded').onclick = () => {
+  const txt = ensureDecoded();
+  if (!txt) { setStatus(t.status_decode_empty); return; }
+  copyText(txt, t.status_decoded_copied);
+};
+$('btn_decoded_to_input').onclick = () => {
+  const txt = ensureDecoded();
+  if (!txt) { setStatus(t.status_decode_empty); return; }
+  els.input.value = txt;
+  els.output.textContent = toMorse(txt);
+  updateSpellBox(txt);
+  setStatus(t.status_decoded_to_input);
+  els.input.focus();
+};
+$('btn_clear_decode').onclick = () => {
+  els.morseInput.value = '';
+  els.decoded.textContent = '';
+  els.morseInput.focus();
+};
+
+$('btn_check').onclick = () => {
+  const text=els.input.value;
+  if(!text.trim()){setStatus(t.status_check_empty);return}
+  const p=findProblems(text);
+  renderSpellBox(p);
+  setStatus(p.length?t.status_check_bad(p.length):t.status_check_ok);
+};
+function autoFix(){
+  let text=els.input.value;
+  for(const[bad,good]of Object.entries(REPLACEMENTS))text=text.split(bad).join(good);
+  els.input.value=text;
+  els.output.textContent=toMorse(text);
+  updateSpellBox(text);
+  setStatus(t.status_fixed);
+  els.input.focus();
+}
+
+const HK = 'morse_history', HMAX = 20;
+function loadHistory() { try { return JSON.parse(storage.get(HK) || '[]'); } catch { return []; } }
+function saveHistory(l) { storage.set(HK, JSON.stringify(l)); }
+function addHistory(text) {
+  let list = loadHistory();
+  if (list.length && list[0].text === text) return;
+  list.unshift({ text, morse: toMorse(text), time: Date.now() });
+  saveHistory(list.slice(0, HMAX));
+  renderHistory();
+}
+function renderHistory() {
+  const list = loadHistory();
+  if (!list.length) { els.history.innerHTML = `<p class="hint">${t.history_empty}</p>`; return; }
+  const frag = document.createDocumentFragment();
+  for (const item of list) {
+    const div = document.createElement('div');
+    div.className = 'hist-item';
+    div.innerHTML = `<div>${escapeHtml(item.morse)}</div><div class="orig">${escapeHtml(item.text)}</div>`;
+    div.onclick = () => {
+      els.input.value = item.text;
+      els.output.textContent = item.morse;
+      updateSpellBox(item.text);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    frag.appendChild(div);
+  }
+  els.history.innerHTML = '';
+  els.history.appendChild(frag);
+}
+$('btn_clear_history').onclick = () => { storage.del(HK); renderHistory(); };
+
+$('btn_clear').onclick = () => {
+  els.input.value = '';
+  els.output.textContent = '';
+  els.spellBox.innerHTML = '';
+  stopAudio(false);
+  setStatus('');
+  els.input.focus();
+};
+
+/* ==================== POSTCARD PNG ==================== */
+let postcardBgImage = null;
+
+$('btn_postcard_bg').onclick = () => $('postcardBgInput').click();
+
+$('postcardBgInput').onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) { e.target.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      postcardBgImage = img;
+      $('postcardBgImg').src = ev.target.result;
+      $('postcardBgPreview').classList.add('show');
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+};
+
+$('btn_postcard_bg_clear').onclick = () => {
+  postcardBgImage = null;
+  $('postcardBgPreview').classList.remove('show');
+  $('postcardBgImg').removeAttribute('src');
+  $('postcardBgInput').value = '';
+};
+
+function wrapLines(ctx, text, maxWidth, maxLines) {
+  const words = String(text).split(/\s+/).filter(Boolean);
+  const lines = [];
+  let cur = '';
+  let truncated = false;
+
+  const pushWord = (w) => {
+    if (ctx.measureText(w).width > maxWidth) {
+      if (cur) { lines.push(cur); cur = ''; }
+      let chunk = '';
+      for (const ch of w) {
+        if (ctx.measureText(chunk + ch).width > maxWidth) {
+          if (chunk) lines.push(chunk);
+          chunk = ch;
+        } else {
+          chunk += ch;
+        }
+        if (lines.length >= maxLines) { truncated = true; return; }
+      }
+      cur = chunk;
+    } else {
+      const test = cur ? cur + ' ' + w : w;
+      if (ctx.measureText(test).width <= maxWidth) {
+        cur = test;
+      } else {
+        if (cur) lines.push(cur);
+        if (lines.length >= maxLines) { truncated = true; cur = ''; return; }
+        cur = w;
+      }
+    }
+  };
+
+  for (const w of words) {
+    pushWord(w);
+    if (truncated) break;
+  }
+  if (cur && lines.length < maxLines) lines.push(cur);
+
+  if (truncated && lines.length) {
+    let last = lines[lines.length - 1];
+    while (ctx.measureText(last + '…').width > maxWidth && last.length) last = last.slice(0, -1);
+    lines[lines.length - 1] = last + '…';
+  }
+  return lines;
+}
+
+function generatePostcard() {
+  return new Promise((resolve) => {
+    const text = els.input.value.trim();
+    const morse = els.output.textContent.trim();
+    if (!text || !morse) { resolve(null); return; }
+
+    const W = 1080, H = 1080;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    const dark = isDark();
+    const fg = dark ? '#FFFFFF' : '#000000';
+    const fgSec = dark ? '#999999' : '#666666';
+    const sep = dark ? '#555555' : '#CCCCCC';
+
+    if (postcardBgImage) {
+      const img = postcardBgImage;
+      const s = Math.max(W / img.width, H / img.height);
+      const dw = img.width * s, dh = img.height * s;
+      ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+      ctx.fillStyle = dark ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.88)';
+      ctx.fillRect(0, 0, W, H);
+    } else {
+      ctx.fillStyle = dark ? '#000000' : '#FFFFFF';
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    const P = 80;
+    const innerW = W - P * 2;
+
+    ctx.font = '700 56px -apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,sans-serif';
+    const textLines = wrapLines(ctx, text, innerW, 4);
+    const textLineH = 68, textH = textLines.length * textLineH;
+
+    ctx.font = '32px "SF Mono",ui-monospace,Menlo,"Courier New",monospace';
+    const morseLines = wrapLines(ctx, morse, innerW, 8);
+    const morseLineH = 46, morseH = morseLines.length * morseLineH;
+
+    const topPad = 100, bottomPad = 160;
+    const gap1 = 40, dividerH = 2, gap2 = 40;
+    const contentH = textH + gap1 + dividerH + gap2 + morseH;
+    const startY = topPad + Math.max(0, (H - topPad - bottomPad - contentH) / 2);
+
+    ctx.textBaseline = 'top';
+
+    ctx.fillStyle = fg;
+    ctx.font = '700 56px -apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,sans-serif';
+    let y = startY;
+    for (const line of textLines) { ctx.fillText(line, P, y); y += textLineH; }
+
+    y += gap1;
+    ctx.strokeStyle = sep; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(P, y); ctx.lineTo(W - P, y); ctx.stroke();
+
+    y += gap2;
+    ctx.fillStyle = fgSec;
+    ctx.font = '32px "SF Mono",ui-monospace,Menlo,"Courier New",monospace';
+    for (const line of morseLines) { ctx.fillText(line, P, y); y += morseLineH; }
+
+    const footerY = H - P - 28;
+    ctx.font = '700 28px -apple-system,BlinkMacSystemFont,system-ui,sans-serif';
+    ctx.fillStyle = fg;
+    ctx.fillText(t.title, P, footerY);
+
+    const wpm = els.wpmSlider.value;
+    const sigLabel = els.signal.options[els.signal.selectedIndex].text;
+    const meta = `${sigLabel} · ${wpm} WPM · ${new Date().toLocaleDateString()}`;
+    ctx.font = '24px -apple-system,BlinkMacSystemFont,system-ui,sans-serif';
+    ctx.fillStyle = fgSec;
+    ctx.textAlign = 'right';
+    ctx.fillText(meta, W - P, footerY + 2);
+    ctx.textAlign = 'left';
+
+    canvas.toBlob((b) => resolve(b), 'image/png', 0.95);
+  });
+}
+
+$('btn_postcard').onclick = async () => {
+  const text = els.input.value.trim();
+  if (!text) { setStatus(t.status_share_first); return; }
+  setStatus(t.status_postcard_generating);
+
+  const pngBlob = await generatePostcard();
+  if (!pngBlob) { setStatus(t.status_postcard_fail); return; }
+
+  const wavBlob = buildWavBlob();
+
+  const ts = timestamp();
+  const pngFile = new File([pngBlob], `morse_postcard_${ts}.png`, { type: 'image/png' });
+  const filesToShare = [pngFile];
+  let wavFile = null;
+
+  if (wavBlob) {
+    wavFile = new File([wavBlob], `morse_${ts}.wav`, { type: 'audio/wav' });
+    filesToShare.push(wavFile);
+  }
+
+  if (navigator.canShare && navigator.share) {
+    if (navigator.canShare({ files: filesToShare })) {
+      try {
+        await navigator.share({ files: filesToShare, title: t.share_title });
+        setStatus(t.status_shared);
+        return;
+      } catch (e) {
+        if (e && e.name === 'AbortError') { setStatus(t.status_share_cancel); return; }
+      }
+    } else if (navigator.canShare({ files: [pngFile] })) {
+      try {
+        await navigator.share({ files: [pngFile], title: t.share_title });
+        setStatus(t.status_shared);
+        if (wavFile) {
+          setTimeout(() => downloadBlob(wavFile.name, wavBlob), 800);
+        }
+        return;
+      } catch (e) {
+        if (e && e.name === 'AbortError') { setStatus(t.status_share_cancel); return; }
+      }
+    }
+  }
+
+  downloadBlob(pngFile.name, pngBlob);
+  if (wavFile) {
+    setTimeout(() => downloadBlob(wavFile.name, wavBlob), 400);
+  }
+  setStatus(t.status_downloaded);
+};
+
+applyLang();
+els.wpmVal.textContent = els.wpmSlider.value + ' WPM';
+const metaInit=document.querySelector('meta[name=theme-color]');
+if(metaInit)metaInit.setAttribute('content',isDark()?'#000000':'#FFFFFF');
+</script>
+</body>
+</html>
